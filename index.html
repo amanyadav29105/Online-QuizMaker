@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Maker</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h1>🧠 Quiz Maker</h1>
+
+<div id="auth">
+    <h2>Login / Register</h2>
+    <input type="text" id="username" placeholder="Enter username">
+    <button onclick="login()">Login</button>
+</div>
+
+<div id="home" class="hidden">
+    <h2>Welcome <span id="user"></span></h2>
+    <button onclick="showCreate()">Create Quiz</button>
+    <button onclick="showQuizzes()">Take Quiz</button>
+</div>
+
+<!-- Create Quiz -->
+<div id="create" class="hidden">
+    <h2>Create Quiz</h2>
+    <input type="text" id="quizTitle" placeholder="Quiz Title">
+    
+    <div id="questions"></div>
+
+    <button onclick="addQuestion()">Add Question</button>
+    <button onclick="saveQuiz()">Save Quiz</button>
+</div>
+
+<!-- Quiz List -->
+<div id="quizList" class="hidden">
+    <h2>Available Quizzes</h2>
+    <div id="list"></div>
+</div>
+
+<!-- Take Quiz -->
+<div id="quizPlay" class="hidden">
+    <h2 id="quizName"></h2>
+    <div id="quizContainer"></div>
+    <button onclick="submitQuiz()">Submit</button>
+</div>
+
+<!-- Results -->
+<div id="result" class="hidden">
+    <h2>Your Score</h2>
+    <p id="score"></p>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
