@@ -1,0 +1,32 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #0f172a;
+    color: white;
+}
+
+input {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 250px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    background: #06b6d4;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.question-box {
+    margin: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
