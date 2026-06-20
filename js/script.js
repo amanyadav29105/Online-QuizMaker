@@ -1,159 +1,142 @@
-// Data
 let currentUser = null;
 let quizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
 let currentQuiz = null;
+let currentIndex = 0;
+let score = 0;
+let selectedAnswer = null;
 
-// Sections
-const sections = ["auth", "home", "create", "quizList", "quizPlay", "result"];
+const sections = ["auth","home","create","quizList","quizPlay","result"];
 
-// Show only one section
-function showSection(id) {
-    sections.forEach(sec => {
-        document.getElementById(sec).classList.add("hidden");
-    });
+function showSection(id){
+    sections.forEach(s=>document.getElementById(s).classList.add("hidden"));
     document.getElementById(id).classList.remove("hidden");
 }
 
-// Login
-function login() {
-    const username = document.getElementById("username").value;
-    if (!username) return alert("Enter username");
-
-    currentUser = username;
-    document.getElementById("user").innerText = username;
-
+// LOGIN
+function login(){
+    const name = document.getElementById("username").value;
+    if(!name) return alert("Enter name");
+    currentUser = name;
+    document.getElementById("user").innerText = name;
     showSection("home");
 }
 
-// Show Create Quiz
-function showCreate() {
+// CREATE QUIZ
+function showCreate(){
     showSection("create");
-
-    // Add first question automatically
-    if (document.getElementById("questions").children.length === 0) {
+    if(document.getElementById("questions").children.length===0){
         addQuestion();
     }
 }
 
-// Show Quiz List
-function showQuizzes() {
-    showSection("quizList");
-    renderQuizList();
-}
-
-// Add Question
-function addQuestion() {
-    const container = document.getElementById("questions");
-
-    const div = document.createElement("div");
-    div.classList.add("question-box");
-
-    div.innerHTML = `
+function addQuestion(){
+    const div=document.createElement("div");
+    div.innerHTML=`
         <input placeholder="Question">
         <input placeholder="Option 1">
         <input placeholder="Option 2">
         <input placeholder="Option 3">
         <input placeholder="Option 4">
-        <input placeholder="Correct Answer (1-4)">
+        <input placeholder="Correct (1-4)">
     `;
-
-    container.appendChild(div);
+    document.getElementById("questions").appendChild(div);
 }
 
-// Save Quiz
-function saveQuiz() {
-    const title = document.getElementById("quizTitle").value;
-    const questionsDiv = document.querySelectorAll(".question-box");
+function saveQuiz(){
+    const title=document.getElementById("quizTitle").value;
+    const qDivs=document.querySelectorAll("#questions div");
 
-    if (!title) return alert("Enter quiz title");
-    if (questionsDiv.length === 0) return alert("Add at least one question");
+    let quiz={title,questions:[]};
 
-    let quiz = { title, questions: [] };
-
-    questionsDiv.forEach(q => {
-        const inputs = q.querySelectorAll("input");
-
+    qDivs.forEach(q=>{
+        let i=q.querySelectorAll("input");
         quiz.questions.push({
-            q: inputs[0].value,
-            options: [
-                inputs[1].value,
-                inputs[2].value,
-                inputs[3].value,
-                inputs[4].value
-            ],
-            answer: inputs[5].value
+            q:i[0].value,
+            options:[i[1].value,i[2].value,i[3].value,i[4].value],
+            answer:i[5].value
         });
     });
 
     quizzes.push(quiz);
-    localStorage.setItem("quizzes", JSON.stringify(quizzes));
+    localStorage.setItem("quizzes",JSON.stringify(quizzes));
 
-    alert("Quiz Saved!");
-
-    // Reset form instead of reload
-    document.getElementById("quizTitle").value = "";
-    document.getElementById("questions").innerHTML = "";
-
+    alert("Saved!");
     showSection("home");
 }
 
-// Render Quiz List
-function renderQuizList() {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
+// QUIZ LIST
+function showQuizzes(){
+    showSection("quizList");
+    const list=document.getElementById("list");
+    list.innerHTML="";
 
-    if (quizzes.length === 0) {
-        list.innerHTML = "<p>No quizzes available</p>";
-        return;
-    }
-
-    quizzes.forEach((q, index) => {
-        const btn = document.createElement("button");
-        btn.innerText = q.title;
-        btn.onclick = () => startQuiz(index);
+    quizzes.forEach((q,i)=>{
+        let btn=document.createElement("button");
+        btn.innerText=q.title;
+        btn.onclick=()=>startQuiz(i);
         list.appendChild(btn);
     });
 }
 
-// Start Quiz
-function startQuiz(index) {
-    currentQuiz = quizzes[index];
-
+// START QUIZ
+function startQuiz(i){
+    currentQuiz=quizzes[i];
+    currentIndex=0;
+    score=0;
     showSection("quizPlay");
-    document.getElementById("quizName").innerText = currentQuiz.title;
+    loadQuestion();
+}
 
-    const container = document.getElementById("quizContainer");
-    container.innerHTML = "";
+// LOAD QUESTION
+function loadQuestion(){
+    let q=currentQuiz.questions[currentIndex];
 
-    currentQuiz.questions.forEach((q, i) => {
-        let html = `<p>${q.q}</p>`;
+    document.getElementById("progress").innerText =
+        `Question ${currentIndex+1}/${currentQuiz.questions.length}`;
 
-        q.options.forEach((opt, j) => {
-            html += `
-            <label>
-                <input type="radio" name="q${i}" value="${j+1}">
-                ${opt}
-            </label><br>`;
-        });
+    document.getElementById("question").innerText=q.q;
 
-        container.innerHTML += html;
+    const options=document.getElementById("options");
+    options.innerHTML="";
+    selectedAnswer=null;
+
+    q.options.forEach((opt,i)=>{
+        let div=document.createElement("div");
+        div.innerText=opt;
+
+        div.onclick=()=>{
+            document.querySelectorAll("#options div").forEach(d=>d.classList.remove("selected"));
+            div.classList.add("selected");
+            selectedAnswer=i+1;
+        };
+
+        options.appendChild(div);
     });
 }
 
-// Submit Quiz
-function submitQuiz() {
-    let score = 0;
+// NEXT QUESTION
+function nextQuestion(){
+    if(selectedAnswer==null) return alert("Select answer");
 
-    currentQuiz.questions.forEach((q, i) => {
-        const ans = document.querySelector(`input[name="q${i}"]:checked`);
-        if (ans && ans.value == q.answer) score++;
-    });
+    if(selectedAnswer==currentQuiz.questions[currentIndex].answer){
+        score++;
+    }
 
+    currentIndex++;
+
+    if(currentIndex<currentQuiz.questions.length){
+        loadQuestion();
+    } else {
+        showResult();
+    }
+}
+
+// RESULT
+function showResult(){
+    showSection("result");
     document.getElementById("score").innerText =
         `${score} / ${currentQuiz.questions.length}`;
-
-    showSection("result");
 }
 
-// Init
+// INIT
 showSection("auth");
