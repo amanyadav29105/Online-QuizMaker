@@ -1,5 +1,18 @@
+// Data
 let currentUser = null;
 let quizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
+let currentQuiz = null;
+
+// Sections
+const sections = ["auth", "home", "create", "quizList", "quizPlay", "result"];
+
+// Show only one section
+function showSection(id) {
+    sections.forEach(sec => {
+        document.getElementById(sec).classList.add("hidden");
+    });
+    document.getElementById(id).classList.remove("hidden");
+}
 
 // Login
 function login() {
@@ -7,25 +20,25 @@ function login() {
     if (!username) return alert("Enter username");
 
     currentUser = username;
-    document.getElementById("auth").classList.add("hidden");
-    document.getElementById("home").classList.remove("hidden");
     document.getElementById("user").innerText = username;
+
+    showSection("home");
 }
 
-// Navigation
+// Show Create Quiz
 function showCreate() {
-    hideAll();
-    document.getElementById("create").classList.remove("hidden");
+    showSection("create");
+
+    // Add first question automatically
+    if (document.getElementById("questions").children.length === 0) {
+        addQuestion();
+    }
 }
 
+// Show Quiz List
 function showQuizzes() {
-    hideAll();
-    document.getElementById("quizList").classList.remove("hidden");
+    showSection("quizList");
     renderQuizList();
-}
-
-function hideAll() {
-    document.querySelectorAll("div").forEach(div => div.classList.add("hidden"));
 }
 
 // Add Question
@@ -52,6 +65,9 @@ function saveQuiz() {
     const title = document.getElementById("quizTitle").value;
     const questionsDiv = document.querySelectorAll(".question-box");
 
+    if (!title) return alert("Enter quiz title");
+    if (questionsDiv.length === 0) return alert("Add at least one question");
+
     let quiz = { title, questions: [] };
 
     questionsDiv.forEach(q => {
@@ -73,13 +89,23 @@ function saveQuiz() {
     localStorage.setItem("quizzes", JSON.stringify(quizzes));
 
     alert("Quiz Saved!");
-    location.reload();
+
+    // Reset form instead of reload
+    document.getElementById("quizTitle").value = "";
+    document.getElementById("questions").innerHTML = "";
+
+    showSection("home");
 }
 
 // Render Quiz List
 function renderQuizList() {
     const list = document.getElementById("list");
     list.innerHTML = "";
+
+    if (quizzes.length === 0) {
+        list.innerHTML = "<p>No quizzes available</p>";
+        return;
+    }
 
     quizzes.forEach((q, index) => {
         const btn = document.createElement("button");
@@ -89,13 +115,11 @@ function renderQuizList() {
     });
 }
 
-let currentQuiz = null;
-
 // Start Quiz
 function startQuiz(index) {
     currentQuiz = quizzes[index];
-    hideAll();
-    document.getElementById("quizPlay").classList.remove("hidden");
+
+    showSection("quizPlay");
     document.getElementById("quizName").innerText = currentQuiz.title;
 
     const container = document.getElementById("quizContainer");
@@ -103,6 +127,7 @@ function startQuiz(index) {
 
     currentQuiz.questions.forEach((q, i) => {
         let html = `<p>${q.q}</p>`;
+
         q.options.forEach((opt, j) => {
             html += `
             <label>
@@ -124,8 +149,11 @@ function submitQuiz() {
         if (ans && ans.value == q.answer) score++;
     });
 
-    hideAll();
-    document.getElementById("result").classList.remove("hidden");
     document.getElementById("score").innerText =
         `${score} / ${currentQuiz.questions.length}`;
+
+    showSection("result");
 }
+
+// Init
+showSection("auth");
